@@ -1,6 +1,7 @@
 var fs = require('fs');
 var gm = require('gm');
 var s3 = require('s3');
+var AWS = require('aws-sdk');
 var async = require('async');
 
 // INITIALIZE
@@ -13,12 +14,15 @@ if (!process.env.AWS_ACCESS_KEY || !process.env.AWS_SECRET_KEY) {
 }
 
 var bucket = process.env.AWS_BUCKET;
+AWS.config.update({
+	//logger: process.stdout,
+	accessKeyId: process.env.AWS_ACCESS_KEY,
+	secretAccessKey: process.env.AWS_SECRET_KEY
+});
 
+var s3c = new AWS.S3();
 var client = s3.createClient({
-  s3Options: {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
-  }
+  s3Client: s3c
 });
 
 // JPEG DEFINITION
@@ -96,20 +100,22 @@ JPEG.prototype.save = function(filename) {
 			if (self.stream) {
 				self.q.pause()
 				// TODO: implement back-to-s3 mode
-				//var obj = new AWS.S3({params: {Bucket: 'myBucket', Key: 'myKey'}});
-				//obj.upload({Body: body}).
-				  //on('httpUploadProgress', function(evt) { console.log(evt); }).
-				  //send(function(err, data) { console.log(err, data) });
 				if (self.local) {
-					var output = './' + filename;
-					var filestream = fs.createWriteStream(output);
+					var filestream = fs.createWriteStream(filename);
 					filestream.write(self.stream);
 					filestream.end();
 					filestream.on('finish',function(){
 						self.q.resume()
 					});
 				} else {
-					throw '[Error: JPEG.save not yet implemented in AWS mode]'
+					s3c.putObject({
+				    Bucket: bucket,
+				    Key: filename,
+				    Body: self.stream
+				  },function(err,data){
+						if (err) throw err;
+				    self.q.resume()
+				  });
 				}
 
 			} else {
@@ -125,16 +131,6 @@ JPEG.prototype.save = function(filename) {
 // START
 
 
-var jpeg = new JPEG('cockatoo.jpg');
+var jpeg = new JPEG('frank.jpg');
 jpeg.local = false;
-jpeg.load().crust(1,40).save('cockatoo.jpg');
-/*
-jpeg = new JPEG('cockatoo.jpg').load().crust(2,40).save('output/cockatoo/2.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(3,40).save('output/cockatoo/3.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(4,40).save('output/cockatoo/4.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(20,40).save('output/cockatoo/20.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(40,40).save('output/cockatoo/40.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(80,40).save('output/cockatoo/80.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(200,40).save('output/cockatoo/200.jpg');
-jpeg = new JPEG('cockatoo.jpg').load().crust(400,40).save('output/cockatoo/400.jpg');
-*/
+jpeg.load().crust(40).save('OUTHPTHRUDFHf.jpg');
