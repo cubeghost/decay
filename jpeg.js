@@ -29,6 +29,8 @@ var client = s3.createClient({
 
 var JPEG = function(filename){
 	var self = this;
+
+	// Set up queue
 	this.q = async.queue(function(task, callback) {
     callback();
 	}, 1);
@@ -36,11 +38,11 @@ var JPEG = function(filename){
 		process.stdout.write('▓ ' + self.stream.length + ' \n')
 	}
 
-	this.q.parent = this;
 	this.stream = null;
-	// TODO: default will later be false
-	this.local = true;
 
+	// config
+	this.local = true; // TODO: default will later be false? maybe?
+	this.quality = 40;
 	this.filename = filename;
 
 	if (!filename) {
@@ -48,10 +50,20 @@ var JPEG = function(filename){
 	}
 }
 
+// config a jpeg
+JPEG.prototype.config = function(config) {
+	for(var prop in config) {
+    if (config.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+      this[prop] = config[prop];
+    }
+	}
+	return this
+}
+
 // crust a jpeg
 JPEG.prototype.crust = function(quantity,quality) {
 	var quantity = quantity ? quantity : 1;
-	var quality = quality ? quality : 20;
+	var quality = quality ? quality : this.quality;
 	for (var i=0;i<quantity;i++) {
 		var self = this;
 		var n = i;
@@ -130,7 +142,5 @@ JPEG.prototype.save = function(filename) {
 
 // START
 
-
-var jpeg = new JPEG('frank.jpg');
-jpeg.local = false;
-jpeg.load().crust(40).save('OUTHPTHRUDFHf.jpg');
+var jpeg = new JPEG('images/frank.jpg').config({quality:100});
+jpeg.load().crust().save('images/OUTHPTHRUDFHf.jpg');
