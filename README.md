@@ -1,6 +1,7 @@
 # decay
 
-it's for jpeg degradation
+it's for jpeg degradation  
+`JPEG.crust()` really should be named decay but it's funnier as crust tbh
 
 basic example:
 
@@ -12,7 +13,7 @@ for AWS mode:
 var jpeg = new JPEG('image.jpg').config({local: false});
 jpeg.load().crust(200).save('temp.jpg');
 ```
-
+---
 ## methods
 
 ### new JPEG(filename)
@@ -34,4 +35,5 @@ lowers the JPEG quality of the stream
 ### JPEG.save(filename)
 - `filename`: local path or S3 key to write the stream to
 
+---
 TODO: actual error handling, better documentation
