@@ -77,6 +77,7 @@ JPEG.prototype.crust = function(quantity,quality) {
 			self.q.pause();
 			// Process image
 			gm(self.stream, self.filename)
+			.sharpen(1)
 			// we don't really get any solid data loss unless we slowly decrease the quality
 			.quality((quality - (quality / quantity * n)))
 			.toBuffer('JPEG',function(err,output) {
