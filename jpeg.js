@@ -7,23 +7,29 @@ var async = require('async');
 // INITIALIZE
 
 require('dotenv').config();
+var can_use_aws = true;
 if (!process.env.AWS_ACCESS_KEY || !process.env.AWS_SECRET_KEY) {
-	throw "[Error: missing access keys in .env]"
+	console.log('[Warning: missing access keys in .env]');
+	can_use_aws = false;
 } else if (!process.env.AWS_BUCKET) {
-	throw "[Error: missing bucket in .env]"
+	console.log('[Error: missing bucket in .env]');
+	can_use_aws = false;
 }
 
-var bucket = process.env.AWS_BUCKET;
-AWS.config.update({
-	//logger: process.stdout,
-	accessKeyId: process.env.AWS_ACCESS_KEY,
-	secretAccessKey: process.env.AWS_SECRET_KEY
-});
+var bucket, s3c, client;
+if (can_use_aws) {
+	bucket = process.env.AWS_BUCKET;
+	AWS.config.update({
+		//logger: process.stdout,
+		accessKeyId: process.env.AWS_ACCESS_KEY,
+		secretAccessKey: process.env.AWS_SECRET_KEY
+	});
 
-var s3c = new AWS.S3();
-var client = s3.createClient({
-  s3Client: s3c
-});
+	s3c = new AWS.S3();
+	client = s3.createClient({
+	  s3Client: s3c
+	});
+}
 
 // JPEG DEFINITION
 
@@ -93,10 +99,10 @@ JPEG.prototype.load = function() {
 	if (this.filename) {
 		var self = this;
 		this.q.push({name: 'load'},function(err) {
-			if (self.local) {
-				self.stream = fs.createReadStream(self.filename);
-			} else {
+			if (!self.local && can_use_aws) { // aws
 				self.stream = client.downloadStream({Bucket: bucket, Key: self.filename});
+			} else { // local
+				self.stream = fs.createReadStream(self.filename);
 			}
 		});
 		return this
@@ -111,15 +117,7 @@ JPEG.prototype.save = function(filename) {
 		this.q.push({name: 'save'},function(err) {
 			if (self.stream) {
 				self.q.pause()
-				// TODO: implement back-to-s3 mode
-				if (self.local) {
-					var filestream = fs.createWriteStream(filename);
-					filestream.write(self.stream);
-					filestream.end();
-					filestream.on('finish',function(){
-						self.q.resume()
-					});
-				} else {
+				if (!self.local && can_use_aws) { // aws
 					s3c.putObject({
 				    Bucket: bucket,
 				    Key: filename,
@@ -128,6 +126,13 @@ JPEG.prototype.save = function(filename) {
 						if (err) throw err;
 				    self.q.resume()
 				  });
+				} else { // local
+					var filestream = fs.createWriteStream(filename);
+					filestream.write(self.stream);
+					filestream.end();
+					filestream.on('finish',function(){
+						self.q.resume()
+					});
 				}
 
 			} else {
@@ -140,7 +145,6 @@ JPEG.prototype.save = function(filename) {
 	}
 }
 
-// START
+// EXPORT
 
-var jpeg = new JPEG('images/frank.jpg').config({quality:100});
-jpeg.load().crust().save('images/OUTHPTHRUDFHf.jpg');
+module.exports = JPEG;

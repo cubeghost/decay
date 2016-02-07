@@ -1,4 +1,4 @@
-# decay.js
+# decay
 
 it's for jpeg degradation
 

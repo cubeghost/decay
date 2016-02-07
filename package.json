@@ -1,7 +1,7 @@
 {
   "name": "decay",
   "version": "0.0.1",
-  "description": "",
+  "description": "jpeg degradation",
   "main": "jpeg.js",
   "dependencies": {
     "gm": "^1.21.1",
@@ -12,7 +12,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node jpeg.js"
+    "test": "node example.js"
   },
   "author": "Alex Baldwin <alex@bldwn.co> (http://bldwn.co/)",
   "license": "ISC"
