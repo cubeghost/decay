@@ -29,7 +29,8 @@ loads the image (set on `this.filename`) into the stream
 
 ### JPEG.crust([quantity],[quality])
 - `quantity`: number of iterations. default: `1`
-- `quality`: JPEG quality level to start from (0-100). default: `this.quality` || `40`
+- `quality`: JPEG quality level to start from (0-100). default: `this.quality` || `40`  
+
 lowers the JPEG quality of the stream
 
 ### JPEG.save(filename)
