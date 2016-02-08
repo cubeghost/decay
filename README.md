@@ -33,6 +33,11 @@ loads the image (set on `this.filename`) into the stream
 
 lowers the JPEG quality of the stream
 
+### JPEG.fry([quantity])
+- `quantity`: number of iterations. default: `1`
+throws a sharpen filter on that JPEG
+(warning: this takes a pretty long time, comparatively, so be careful)
+
 ### JPEG.save(filename)
 - `filename`: local path or S3 key to write the stream to
 

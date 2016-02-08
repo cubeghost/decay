@@ -77,9 +77,36 @@ JPEG.prototype.crust = function(quantity,quality) {
 			self.q.pause();
 			// Process image
 			gm(self.stream, self.filename)
-			.sharpen(1)
+			// just a slight touch
+			.sharpen(1,0.5)
 			// we don't really get any solid data loss unless we slowly decrease the quality
-			.quality((quality - (quality / quantity * n)))
+			.quality((quality - (quality / quantity / 2 * n)))
+			.toBuffer('JPEG',function(err,output) {
+			  if (err) throw err;
+				// Save stream output
+				if (output) {
+					self.stream = output;
+					self.q.resume();
+					process.stdout.write('▒');
+				} else {
+					throw '[Error: no output from gm.toBuffer]'
+				}
+			});
+		});
+	}
+	return this
+}
+
+// fry a jpeg
+JPEG.prototype.fry = function(quantity,amount) {
+	var self = this;
+	var quantity = quantity ? quantity : 1;
+	for (var i=0;i<quantity;i++) {
+		this.q.push({name: 'fry'},function(err) {
+			self.q.pause();
+			// Process image
+			gm(self.stream, self.filename)
+			.sharpen(1,100)
 			.toBuffer('JPEG',function(err,output) {
 			  if (err) throw err;
 				// Save stream output
